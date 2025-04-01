@@ -12,11 +12,11 @@ const generateToken = (userId) => {
 const registerUser = async (req,res) => {
     try{
         const {name,email,password,adminInviteToken,profileImageUrl} = req.body
-
         //// checks if user already exist
-        const userExists = User.findOne({ email })
+        const userExists = await User.findOne({ email })
+        
         if(userExists) {
-            return res.status(400).json({message : "User already exists"})
+            return res.status(400).json({message : "user already exist"})
         }
         ///check and assign roles
         let role ="member"
@@ -57,7 +57,24 @@ const registerUser = async (req,res) => {
 // @ public
 const loginUser = async (req,res) => {
     try{
-     const { } = req.body
+     const {email,password } = req.body
+     if (!email || !password) return res.status(400).json({message : "invalid email or password"})
+        const foundUser = await User.findOne({ email})
+    // check if user's data exists
+    if (!foundUser) return res.status(400).json({message : "user not found,proceed create account"})
+    // is password matched
+     const matchedPwd = await bcrypt.compare(password,foundUser.password)
+     if(!matchedPwd) return res.status(400).json({message : "incorrect password"})
+    //  return user's data with jwt token
+    res.status(200).json({
+        _id : foundUser._id,
+        name : foundUser.name,
+        email : foundUser.email,
+        role : foundUser.role,
+        profileImageUrl : foundUser.profileImageUrl,
+        token : generateToken(foundUser._id)
+      })
+     
     }catch(err){
         res.status(500).json({message : "Server error",error : err.message})
     }
@@ -68,9 +85,14 @@ const loginUser = async (req,res) => {
 /// @route GET /api/auth/profile
 // @ private ; require jwt
 const getUserProfile = async (req,res) => {
-
+//    const {user} = req.body
+ 
     try{
-
+        const userData = await User.findById(req.user.id).select("-password");
+        if (!userData) {
+         return res.status(404).json({message : "user not found"})
+        }
+        res.json(userData)
     }catch(err){
         res.status(500).json({message : "Server error",error : err.message})
     }

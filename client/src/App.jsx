@@ -11,14 +11,20 @@ import CreateTasks from "./pages/Admin/CreateTasks";
 import UserDashboard from "./pages/User/UserDashboard";
 import MyTasks from "./pages/User/MyTasks";
 import ViewTaskDetails from "./pages/User/ViewTaskDetails";
+import { Link } from "react-router-dom";
+import Home from "./home";
 function App() {
   return (
     <div>
+     
+
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
 
+          {/* {home test} */}
+          <Route path="/" element={<Home/>}/>
           {/* Admin routes */}
           <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
             <Route path="admin/dashboard" element={<Dashboard />} />

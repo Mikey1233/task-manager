@@ -3,7 +3,12 @@ import { Outlet } from 'react-router-dom'
 
 function PrivateRoute({allowedRoles}) {
   return (
+    <div>
+   
+          
     <Outlet/>
+    </div>
+     
   )
 }
 

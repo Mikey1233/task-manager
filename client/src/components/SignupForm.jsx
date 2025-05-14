@@ -181,7 +181,7 @@ function SignupForm() {
               setFormData({ ...formData, adminCode: e.target.value })
             }
             className="w-full px-3 py-1.5 bg-gray-100 rounded-md border border-gray-200"
-            placeholder="admin code (optional)"
+            placeholder="enter 6-digit code (optional)"
           />
         </div>
 

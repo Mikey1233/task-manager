@@ -26,7 +26,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/tasks", taskRoutes);
-// app.use("/api/reports", reportsRoutes);
+app.use("/api/reports", reportsRoutes);
 
 // start server now
 

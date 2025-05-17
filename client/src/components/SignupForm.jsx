@@ -1,10 +1,17 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Formbtn from "./Btn";
+import { API_PATHS } from "../utils/apiPaths";
+import { UserContext } from "../context/userContext";
+// import uploadImage from "../utils/uploadImage";
+// import uploadI
+import uploadImage from "../utils/uploadImage";
+import axiosInstance from "../utils/axiosInstance";
 
 function SignupForm() {
-  const [profileImage, setProfileImage] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
+  const navigate = useNavigate();
+  const { updateUser } = useContext(UserContext);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -12,20 +19,23 @@ function SignupForm() {
     adminCode: "",
     terms: false,
   });
+  const [profileImage, setProfileImage] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setProfileImage(file);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result);
-      };
+      reader.onloadend = () => setPreviewUrl(reader.result);
       reader.readAsDataURL(file);
     }
   };
-  const validateForm = (e) => {
-    e.preventDefault();
+
+  const validateForm = () => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = "Name is required";
     if (!formData.email.trim()) {
@@ -38,32 +48,72 @@ function SignupForm() {
     } else if (formData.password.length < 8) {
       newErrors.password = "Password must be at least 8 characters";
     }
-    if (!formData.terms) {
-      newErrors.terms = "You must agree to the terms";
+    if (!formData.terms) newErrors.terms = "You must agree to the terms";
+    return newErrors;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrors({});
+    setSubmitError(null);
+    setIsSubmitting(true);
+
+    const newErrors = validateForm();
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setIsSubmitting(false);
+      return;
     }
 
-    setErrors(newErrors);
+    try {
+      let profileImageUrl = "";
+      if (profileImage) {
+        profileImageUrl = await uploadImage(profileImage);
+      }
 
-    if (Object.keys(newErrors).length === 0) {
-      // submit form
-      console.log("Form submitted:", formData);
+      const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, {
+        email: formData.email,
+        password: formData.password,
+        adminInviteToken: formData.adminCode,
+        name: formData.name,
+        profileImageUrl : profileImageUrl.imageUrl,
+      });
+
+      const { token, role } = response.data;
+      localStorage.setItem("token", token);
+      updateUser(response.data);
+
+      setFormData({ name: "", email: "", password: "", adminCode: "", terms: false });
+      setProfileImage(null);
+      setPreviewUrl(null);
+
+      // Redirect based on role
+      navigate(role === "admin" ? "/admin/dashboard" : "/user/dashboard");
+    } catch (error) {
+      const errorMessage = error?.response?.data?.message || "Failed to sign up. Please try again.";
+      setSubmitError(errorMessage);
+      console.error("Signup error:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
   return (
     <div className="bg-white rounded-lg p-8 max-w-md w-full relative z-50 animate-[fadeInDown_0.6s_ease-out_forwards]">
-      <h2 className="text-xl font-bold mb-6 font-display">
-        Let's get you set up
-      </h2>
+      <h2 className="text-xl font-bold mb-6 font-display">Let's get you set up</h2>
 
-      <form className="space-y-4" onSubmit={validateForm}>
-    
+      {submitError && (
+        <p className="text-sm text-red-600 mb-4">{submitError}</p>
+      )}
+
+      <form className="space-y-4" onSubmit={handleSubmit}>
         {/* Profile Image Upload */}
         <div className="flex flex-col items-center mb-4">
           <div className="relative w-20 h-20 mb-2">
             <div className="w-full h-full rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden">
               {previewUrl ? (
                 <img
-                  src={previewUrl || "/placeholder.svg"}
+                  src={previewUrl}
                   alt="Profile preview"
                   className="w-full h-full object-cover"
                 />
@@ -113,7 +163,7 @@ function SignupForm() {
               type="file"
               id="profile-upload"
               className="hidden"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/jpg"
               onChange={handleImageChange}
             />
           </div>
@@ -131,6 +181,7 @@ function SignupForm() {
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             className="w-full px-3 py-1.5 bg-gray-100 rounded-md border border-gray-200"
             placeholder="First & Last Name"
+            disabled={isSubmitting}
           />
           {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
         </div>
@@ -143,16 +194,14 @@ function SignupForm() {
             type="email"
             id="email"
             value={formData.email}
-            onChange={(e) =>
-              setFormData({ ...formData, email: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             className="w-full px-3 py-1.5 bg-gray-100 rounded-md border border-gray-200"
             placeholder="name@business.com"
+            disabled={isSubmitting}
           />
-          {errors.email && (
-            <p className="text-sm text-red-600">{errors.email}</p>
-          )}
+          {errors.email && <p className="text-sm text-red-600">{errors.email}</p>}
         </div>
+
         <div>
           <label htmlFor="password" className="block text-sm mb-1">
             Password
@@ -161,27 +210,23 @@ function SignupForm() {
             type="password"
             id="password"
             value={formData.password}
-            onChange={(e) =>
-              setFormData({ ...formData, password: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             className="w-full px-3 py-1.5 bg-gray-100 rounded-md border border-gray-200"
             placeholder="Password"
+            disabled={isSubmitting}
           />
-          {errors.password && (
-            <p className="text-sm text-red-600">{errors.password}</p>
-          )}
+          {errors.password && <p className="text-sm text-red-600">{errors.password}</p>}
         </div>
+
         <div>
-          {/* <label htmlFor="email" className="block text-sm mb-1">Email address</label> */}
           <input
             type="text"
             id="admin"
             value={formData.adminCode}
-            onChange={(e) =>
-              setFormData({ ...formData, adminCode: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, adminCode: e.target.value })}
             className="w-full px-3 py-1.5 bg-gray-100 rounded-md border border-gray-200"
-            placeholder="enter 6-digit code (optional)"
+            placeholder="Enter 6-digit code (optional)"
+            disabled={isSubmitting}
           />
         </div>
 
@@ -190,10 +235,9 @@ function SignupForm() {
             type="checkbox"
             id="terms"
             checked={formData.terms}
-            onChange={(e) =>
-              setFormData({ ...formData, terms: e.target.checked })
-            }
+            onChange={(e) => setFormData({ ...formData, terms: e.target.checked })}
             className="mt-1"
+            disabled={isSubmitting}
           />
           <label htmlFor="terms" className="text-xs text-gray-600">
             I agree to{" "}
@@ -207,8 +251,11 @@ function SignupForm() {
           </label>
         </div>
         {errors.terms && <p className="text-sm text-red-600">{errors.terms}</p>}
- <Formbtn text={"Get Started "}/>
-       
+
+        <Formbtn
+          text={isSubmitting ? "Submitting..." : "Get Started"}
+          disabled={isSubmitting}
+        />
       </form>
 
       <div className="text-center mt-6 text-sm">

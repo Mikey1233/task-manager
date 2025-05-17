@@ -1,7 +1,7 @@
 import { CheckCircle } from "lucide-react";
 import doodle from "../../assets/doodle.webp";
 import LoginForm from "../../components/LoginForm";
-import { logIncontent } from "../../context/authContent";
+import { logIncontent } from "../../textdata/authContent";
 
 function Login() {
   return (

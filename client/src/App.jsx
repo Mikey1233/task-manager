@@ -11,11 +11,13 @@ import CreateTasks from "./pages/Admin/CreateTasks";
 import UserDashboard from "./pages/User/UserDashboard";
 import MyTasks from "./pages/User/MyTasks";
 import ViewTaskDetails from "./pages/User/ViewTaskDetails";
-import { Link } from "react-router-dom";
-import Home from "./home";
+// import { Link } from "react-router-dom";
+import UserProvider from "./context/userContext";
+import Root from "./Root";
 function App() {
   return (
-    <div>
+    <UserProvider>
+ <div>
      
 
       <Router>
@@ -23,8 +25,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
 
-          {/* {home test} */}
-          <Route path="/" element={<Home/>}/>
+         
           {/* Admin routes */}
           <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
             <Route path="admin/dashboard" element={<Dashboard />} />
@@ -38,9 +39,13 @@ function App() {
             <Route path="user/my-tasks" element={<MyTasks />} />
             <Route path="user/task-details/:id" element={<ViewTaskDetails />} />
           </Route>
+           {/* {Defualt route test} */}
+          <Route path="/" element={<Root/>}/>
         </Routes>
       </Router>
     </div>
+    </UserProvider>
+   
   );
 }
 

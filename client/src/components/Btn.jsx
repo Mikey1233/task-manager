@@ -1,8 +1,8 @@
-import React from 'react'
 import doodle from "../assets/doodle.webp";
 
 
-function Formbtn({text}) {
+function Formbtn({text,loading}) {
+  
   return (
     <button
     type="submit"
@@ -14,7 +14,17 @@ function Formbtn({text}) {
       className="absolute w-full h-full object-cover top-0 left-0 opacity-10 text-transparent"
       src={doodle}
     />
-    {text}
+    {/* {text}
+     */}
+     {loading ? ( <div className="text-center space-y-6">
+      <div
+        className="w-6 h-6 border-2 border-t-[#fff] border-indigo-500 rounded-full animate-spin mx-auto"
+      ></div>
+    
+      
+   
+  
+</div>):(`${text}`)}
   </button>
   )
 }

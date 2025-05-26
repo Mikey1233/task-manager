@@ -11,12 +11,14 @@ import CreateTasks from "./pages/Admin/CreateTasks";
 import UserDashboard from "./pages/User/UserDashboard";
 import MyTasks from "./pages/User/MyTasks";
 import ViewTaskDetails from "./pages/User/ViewTaskDetails";
+import {Toaster} from "sonner"
 // import { Link } from "react-router-dom";
 import UserProvider from "./context/userContext";
 import Root from "./Root";
 function App() {
   return (
     <UserProvider>
+      <Toaster richColors position="bottom-right" />
  <div>
      
 

@@ -3,8 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import Formbtn from "./Btn";
 import { API_PATHS } from "../utils/apiPaths";
 import { UserContext } from "../context/userContext";
-// import uploadImage from "../utils/uploadImage";
-// import uploadI
 import uploadImage from "../utils/uploadImage";
 import axiosInstance from "../utils/axiosInstance";
 

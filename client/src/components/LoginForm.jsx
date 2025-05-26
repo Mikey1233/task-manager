@@ -1,26 +1,28 @@
-import { useState,useContext } from "react";
+import { useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import Formbtn from "./Btn";
 import axiosInstance from "../utils/axiosInstance";
 import { API_PATHS } from "../utils/apiPaths";
 import { useNavigate } from "react-router-dom";
-import {UserContext } from "../context/userContext";
+import { UserContext } from "../context/userContext";
+import { toast } from 'sonner';
 
 
 function LoginForm() {
-  const {updateUser} = useContext(UserContext)
-   const navigate = useNavigate();
-  
+  const { updateUser } = useContext(UserContext);
+  const [loading,setLoading] = useState(false)
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [errors, setErrors] = useState({});
- 
+
   const validateForm = async (e) => {
     e.preventDefault();
     const newErrors = {};
-   
+
     if (!formData.email.trim()) {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
@@ -31,53 +33,52 @@ function LoginForm() {
     } else if (formData.password.length < 8) {
       newErrors.password = "Password must be at least 8 characters";
     }
-  
 
     setErrors(newErrors);
 
-try {
- if (Object.keys(newErrors).length === 0) {
-      // submit form
-      const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN,{
-        email : formData.email,
-        password: formData.password
-      })
-      console.log("Form submitted:", formData);
+    try {
+      if (Object.keys(newErrors).length === 0) {
+        // submit form
+        setLoading(true)
 
-      const {token,role} = response.data
-      setFormData({ email: "", password: "" });
+        const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN, {
+          email: formData.email,
+          password: formData.password,
+        });
+        console.log("Form submitted:", formData);
 
-     console.log(role,token)
-      if (token){
-        localStorage.setItem("token",token)
-        updateUser(response.data)
+        const { token, role } = response.data;
+        setFormData({ email: "", password: "" });
 
-        //redirect based on role
-        if(role === "admin"){
-          navigate("/admin/dashboard")
-        }else{
-          navigate("/user/dashboard")
+        console.log(role, token);
+        if (token) {
+          localStorage.setItem("token", token);
+          toast.success("logged In successfully!");
+          updateUser(response.data);
 
+          //redirect based on role
+          if (role === "admin") {
+            navigate("/admin/dashboard");
+          } else {
+            navigate("/user/dashboard");
+          }
         }
       }
-     
+    } catch (error) {
+       const errorMessage = error?.response?.data?.message || "Failed to sign up. Please try again.";
+      console.log(error);
+      setLoading(false)
+      toast.error(errorMessage);
+
+    } finally {
+      setLoading(false)
     }
-}catch(error){
- console.log(error)
-} 
-   
   };
   return (
     <div className="bg-white rounded-lg p-8 max-w-md w-full relative z-50 animate-[fadeInDown_0.6s_ease-out_forwards]">
-      <h2 className="text-xl font-bold mb-6 font-display">
-        Let's get you in
-      </h2>
+      <h2 className="text-xl font-bold mb-6 font-display">Let's get you in</h2>
 
       <form className="space-y-4" onSubmit={validateForm}>
-    
-       
-
-      
         <div>
           <label htmlFor="email" className="block text-sm mb-1">
             Email address
@@ -114,10 +115,8 @@ try {
             <p className="text-sm text-red-600">{errors.password}</p>
           )}
         </div>
-     
-       
 
-       <Formbtn text={"Log in"}/>
+        <Formbtn text={"Log in"} loading={loading} />
       </form>
 
       <div className="text-center mt-6 text-sm">

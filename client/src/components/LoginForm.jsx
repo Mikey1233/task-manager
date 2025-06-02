@@ -65,7 +65,7 @@ function LoginForm() {
         }
       }
     } catch (error) {
-       const errorMessage = error?.response?.data?.message || "Failed to sign up. Please try again.";
+       const errorMessage = error?.response?.data?.message || "Failed to sign in. Please try again.";
       console.log(error);
       setLoading(false)
       toast.error(errorMessage);

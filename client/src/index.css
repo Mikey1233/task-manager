@@ -6,7 +6,7 @@
     --font-display :  "Space Grotesk", sans-serif;
   --font-display2 : "Roboto", sans-serif;
     --breakpoint-3xl : 1920px;
-    --color-primary : "#000"
+    --color-main : #1368EC;
 }
 
 
@@ -33,4 +33,7 @@
 
 .card {
   @apply bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border-gray-200/50 
+}
+.card-btn {
+  @apply flex items-center gap-3 text-[12px] font-medium text-gray-700 hover:text-main bg-gray-50 hover:bg-blue-50 px-4 py-1.5 rounded-lg border border-gray-200/50 cursor-pointer
 }

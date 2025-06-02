@@ -41,7 +41,7 @@ function SideMenu({ activeMenu }) {
         </div>
 
         {user?.role === "admin" && (
-          <div className="text-[10px] bg-[#1368EC] px-3 py-0.5 rounded mt-1 font-medium text-white">
+          <div className="text-[10px] bg-main px-3 py-0.5 rounded mt-1 font-medium text-white">
             Admin
           </div>
         )}
@@ -56,7 +56,7 @@ function SideMenu({ activeMenu }) {
           key={index}
           className={`w-full flex items-center gap-4 text-[15px] ${
             activeMenu === item.label
-              ? "text-[#1368EC]  bg-linear-to-r from-blue-50/40 to-blue-100/50 border-r-3"
+              ? "text-main  bg-linear-to-r from-blue-50/40 to-blue-100/50 border-r-3"
               : ""
           } py-3 px-6 mb-3 cursor-pointer`}
           onClick={() => handleClick(item.path)}
